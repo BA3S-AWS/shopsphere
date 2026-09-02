@@ -37,14 +37,36 @@ func cartHandler(store *CartStore) http.HandlerFunc {
 			json.NewEncoder(w).Encode(cart)
 
 		case http.MethodPost:
-			var cart Cart
+			var incomingCart Cart
 
-			if err := json.NewDecoder(r.Body).Decode(&cart); err != nil {
+			if err := json.NewDecoder(r.Body).Decode(&incomingCart); err != nil {
 				http.Error(w, "Invalid request", http.StatusBadRequest)
 				return
 			}
 
-			cart.UserID = userID
+			cart, err := store.getCart(userID)
+			if err != nil {
+				cart = Cart{
+					UserID: userID,
+					Items:  []CartItem{},
+				}
+			}
+
+			for _, incomingItem := range incomingCart.Items {
+				found := false
+
+				for i := range cart.Items {
+					if cart.Items[i].ProductID == incomingItem.ProductID {
+						cart.Items[i].Quantity += incomingItem.Quantity
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					cart.Items = append(cart.Items, incomingItem)
+				}
+			}
 
 			if err := store.saveCart(cart); err != nil {
 				http.Error(w, "Unable to save cart", http.StatusInternalServerError)
