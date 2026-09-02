@@ -1,0 +1,20 @@
+# Secrets / environment
+.env
+.env.*
+*.pem
+*.key
+
+# Logs
+*.log
+
+# Go binaries
+src/product-catalog/product-catalog
+src/cart/cart
+src/checkout/checkout
+src/payment/payment
+src/accounting/accounting
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
