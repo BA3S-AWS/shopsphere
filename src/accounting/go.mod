@@ -1,4 +1,4 @@
-module shopsphere/accounting
+module shopshore/accounting
 
 go 1.24.4
 

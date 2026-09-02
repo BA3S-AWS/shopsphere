@@ -1,4 +1,4 @@
-module shopsphere/product-catalog
+module shopshore/product-catalog
 
 go 1.24.4
 

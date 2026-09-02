@@ -47,6 +47,31 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	total := calculateTotal(items, products)
+	shipping, err := callShipping(ShippingRequest{
+		UserID: request.UserID,
+		Amount: total,
+	})
+
+	if err != nil {
+		http.Error(w, "Shipping service unavailable", http.StatusBadGateway)
+		return
+	}
+
+	total += shipping.ShippingCost
+	fraud, err := callFraudDetection(FraudRequest{
+		UserID: request.UserID,
+		Amount: total,
+	})
+
+	if err != nil {
+		http.Error(w, "Fraud detection unavailable", http.StatusBadGateway)
+		return
+	}
+
+	if !fraud.Approved {
+		http.Error(w, "Order rejected by fraud detection", http.StatusForbidden)
+		return
+	}
 	payment, err := processPayment(PaymentRequest{
 		Amount:     total,
 		CardNumber: request.CardNumber,
@@ -64,11 +89,13 @@ func checkoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	order := Order{
-		OrderID: uuid.NewString(),
-		UserID:  request.UserID,
-		Items:   items,
-		Total:   total,
-		Status:  "created",
+		OrderID:       uuid.NewString(),
+		UserID:        request.UserID,
+		Items:         items,
+		ShippingCost:  shipping.ShippingCost,
+		EstimatedDays: shipping.EstimatedDays,
+		Total:         total,
+		Status:        "created",
 	}
 
 	if err := publishOrder(order); err != nil {

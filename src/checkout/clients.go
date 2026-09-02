@@ -108,3 +108,70 @@ func processPayment(request PaymentRequest) (PaymentResponse, error) {
 
 	return payment, nil
 }
+
+func callFraudDetection(request FraudRequest) (FraudResponse, error) {
+	fraudURL := os.Getenv("FRAUD_URL")
+
+	body, err := json.Marshal(request)
+	if err != nil {
+		return FraudResponse{}, err
+	}
+
+	resp, err := http.Post(
+		fraudURL+"/fraud-check",
+		"application/json",
+		bytes.NewBuffer(body),
+	)
+	if err != nil {
+		return FraudResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return FraudResponse{}, fmt.Errorf(
+			"fraud detection service returned status %d",
+			resp.StatusCode,
+		)
+	}
+
+	var fraudResponse FraudResponse
+
+	if err := json.NewDecoder(resp.Body).Decode(&fraudResponse); err != nil {
+		return FraudResponse{}, err
+	}
+
+	return fraudResponse, nil
+}
+func callShipping(request ShippingRequest) (ShippingResponse, error) {
+	shippingURL := os.Getenv("SHIPPING_URL")
+
+	body, err := json.Marshal(request)
+	if err != nil {
+		return ShippingResponse{}, err
+	}
+
+	resp, err := http.Post(
+		shippingURL+"/shipping",
+		"application/json",
+		bytes.NewBuffer(body),
+	)
+	if err != nil {
+		return ShippingResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return ShippingResponse{}, fmt.Errorf(
+			"shipping service returned status %d",
+			resp.StatusCode,
+		)
+	}
+
+	var shipping ShippingResponse
+
+	if err := json.NewDecoder(resp.Body).Decode(&shipping); err != nil {
+		return ShippingResponse{}, err
+	}
+
+	return shipping, nil
+}

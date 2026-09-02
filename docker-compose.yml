@@ -1,11 +1,12 @@
+name: shopshore
 services:
   percona:
     image: percona/percona-server:8.4
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: shopsphere
-      MYSQL_USER: shopsphere
-      MYSQL_PASSWORD: shopsphere
+      MYSQL_DATABASE: shopshore
+      MYSQL_USER: shopshore
+      MYSQL_PASSWORD: shopshore
     ports:
       - "3306:3306"
     volumes:
@@ -41,9 +42,9 @@ services:
     environment:
       DB_HOST: percona
       DB_PORT: 3306
-      DB_USER: shopsphere
-      DB_PASSWORD: shopsphere
-      DB_NAME: shopsphere
+      DB_USER: shopshore
+      DB_PASSWORD: shopshore
+      DB_NAME: shopshore
     depends_on:
        percona:
          condition: service_healthy
@@ -57,6 +58,11 @@ services:
 
   payment:
     build: ./src/payment
+  shipping:
+    build: ./src/shipping
+
+  fraud-detection:
+    build: ./src/fraud-detection
 
   checkout:
     build: ./src/checkout
@@ -66,20 +72,23 @@ services:
       PAYMENT_URL: http://payment:8080
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPIC: orders
+      SHIPPING_URL: http://shipping:8080
+      FRAUD_URL: http://fraud-detection:8080
     depends_on:
       - cart
       - product-catalog
       - payment
       - kafka
-
+      - shipping
+      - fraud-detection
   accounting:
     build: ./src/accounting
     environment:
       DB_HOST: percona
       DB_PORT: 3306
-      DB_USER: shopsphere
-      DB_PASSWORD: shopsphere
-      DB_NAME: shopsphere
+      DB_USER: shopshore
+      DB_PASSWORD: shopshore
+      DB_NAME: shopshore
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPIC: orders
     depends_on:
@@ -89,9 +98,17 @@ services:
         condition: service_started
   frontend:
     build: ./src/frontend
-    ports:
-      - "8080:80"
     depends_on:
+      - product-catalog
+      - cart
+      - checkout
+
+  frontend-proxy:
+    build: ./src/frontend-proxy
+    ports:
+      - "8080:8080"
+    depends_on:
+      - frontend
       - product-catalog
       - cart
       - checkout

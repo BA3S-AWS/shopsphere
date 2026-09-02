@@ -1,4 +1,4 @@
-module shopsphere/cart
+module shopshore/cart
 
 go 1.24.4
 

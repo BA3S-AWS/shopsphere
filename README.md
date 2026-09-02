@@ -1,5 +1,6 @@
-# ShopSphere
-ShopSphere est une application e-commerce microservices conçue comme support
+# ShopShore
+
+ShopShore est une application e-commerce microservices conçue comme support
 d'un projet DevOps / DevSecOps / SRE.
 
 L'objectif principal du projet n'est pas de développer une plateforme
@@ -48,7 +49,7 @@ de mettre en œuvre :
 
 # Microservices
 #Frontend
-Interface web de ShopSphere.
+Interface web de ShopShore.
 Technologies :
 HTML
 JavaScript
@@ -226,8 +227,8 @@ Une commande correctement consommée produit un message similaire à :
 Order <UUID> saved successfully
 
 #Vérification Percona
-docker exec -it shopsphere-percona-1 \
-  mysql -u root -prootpassword shopsphere \
+docker exec -it shopshore-percona-1 \
+  mysql -u root -prootpassword shopshore \
   -e "SELECT order_id,user_id,total,status FROM orders;"
 
 #Arrêt de l'environnement

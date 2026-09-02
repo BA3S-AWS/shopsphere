@@ -18,3 +18,6 @@ src/accounting/accounting
 .DS_Store
 .vscode/
 .idea/
+
+src/shipping/shipping
+src/fraud-detection/fraud-detection

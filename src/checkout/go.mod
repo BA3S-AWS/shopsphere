@@ -1,4 +1,4 @@
-module shopsphere/checkout
+module shopshore/checkout
 
 go 1.24.4
 
