@@ -1,5 +1,4 @@
 # ShopSphere
-NB: # il manque le microservice Fraud-detection: "il sera ajouté plus tard "
 ShopSphere est une application e-commerce microservices conçue comme support
 d'un projet DevOps / DevSecOps / SRE.
 
