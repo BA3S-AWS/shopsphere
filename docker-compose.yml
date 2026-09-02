@@ -1,0 +1,94 @@
+services:
+
+  percona:
+    image: percona/percona-server:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: shopsphere
+      MYSQL_USER: shopsphere
+      MYSQL_PASSWORD: shopsphere
+    ports:
+      - "3306:3306"
+    volumes:
+      - percona-data:/var/lib/mysql
+
+  valkey:
+    image: valkey/valkey:8
+    ports:
+      - "6379:6379"
+
+  kafka:
+    image: apache/kafka:4.0.0
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+  product-catalog:
+    build: ./src/product-catalog
+    environment:
+      DB_HOST: percona
+      DB_PORT: 3306
+      DB_USER: shopsphere
+      DB_PASSWORD: shopsphere
+      DB_NAME: shopsphere
+    depends_on:
+      - percona
+
+  cart:
+    build: ./src/cart
+    environment:
+      VALKEY_HOST: valkey
+      VALKEY_PORT: 6379
+    depends_on:
+      - valkey
+
+  payment:
+    build: ./src/payment
+
+  checkout:
+    build: ./src/checkout
+    environment:
+      CART_URL: http://cart:8080
+      PRODUCT_CATALOG_URL: http://product-catalog:8080
+      PAYMENT_URL: http://payment:8080
+      KAFKA_BROKER: kafka:9092
+      KAFKA_TOPIC: orders
+    depends_on:
+      - cart
+      - product-catalog
+      - payment
+      - kafka
+
+  accounting:
+    build: ./src/accounting
+    environment:
+      DB_HOST: percona
+      DB_PORT: 3306
+      DB_USER: shopsphere
+      DB_PASSWORD: shopsphere
+      DB_NAME: shopsphere
+      KAFKA_BROKER: kafka:9092
+      KAFKA_TOPIC: orders
+    depends_on:
+      - percona
+      - kafka
+
+  frontend:
+    build: ./src/frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - product-catalog
+      - cart
+      - checkout
+
+volumes:
+  percona-data:
