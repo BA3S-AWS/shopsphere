@@ -1,5 +1,4 @@
 services:
-
   percona:
     image: percona/percona-server:8.4
     environment:
@@ -11,6 +10,11 @@ services:
       - "3306:3306"
     volumes:
       - percona-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpassword"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   valkey:
     image: valkey/valkey:8
@@ -40,8 +44,8 @@ services:
       DB_PASSWORD: shopsphere
       DB_NAME: shopsphere
     depends_on:
-      - percona
-
+       percona:
+         condition: service_healthy
   cart:
     build: ./src/cart
     environment:
@@ -78,9 +82,10 @@ services:
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPIC: orders
     depends_on:
-      - percona
-      - kafka
-
+      percona:
+        condition: service_healthy
+      kafka:
+        condition: service_started
   frontend:
     build: ./src/frontend
     ports:
