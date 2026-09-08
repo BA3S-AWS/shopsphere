@@ -38,7 +38,11 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
   product-catalog:
-    build: ./src/product-catalog
+    image: ${REGISTRY}/shopsphere-product-catalog:latest
+    build:
+      context: ./src/product-catalog
+      cache_from:
+        - ${REGISTRY}/shopsphere-product-catalog:latest
     environment:
       DB_HOST: percona
       DB_PORT: 3306
@@ -49,7 +53,11 @@ services:
        percona:
          condition: service_healthy
   cart:
-    build: ./src/cart
+    image: ${REGISTRY}/shopsphere-cart:latest
+    build:
+      context: ./src/cart
+      cache_from:
+        - ${REGISTRY}/shopsphere-cart:latest
     environment:
       VALKEY_HOST: valkey
       VALKEY_PORT: 6379
@@ -57,15 +65,32 @@ services:
       - valkey
 
   payment:
-    build: ./src/payment
+    image: ${REGISTRY}/shopsphere-payment:latest
+    build:
+      context: ./src/payment
+      cache_from:
+        - ${REGISTRY}/shopsphere-payment:latest
+
   shipping:
-    build: ./src/shipping
+    image: ${REGISTRY}/shopsphere-shipping:latest
+    build:
+      context: ./src/shipping
+      cache_from:
+        - ${REGISTRY}/shopsphere-shipping:latest
 
   fraud-detection:
-    build: ./src/fraud-detection
+    image: ${REGISTRY}/shopsphere-fraud-detection:latest
+    build:
+      context: ./src/fraud-detection
+      cache_from:
+        - ${REGISTRY}/shopsphere-fraud-detection:latest
 
   checkout:
-    build: ./src/checkout
+    image: ${REGISTRY}/shopsphere-checkout:latest
+    build:
+      context: ./src/checkout
+      cache_from:
+        - ${REGISTRY}/shopsphere-checkout:latest
     environment:
       CART_URL: http://cart:8080
       PRODUCT_CATALOG_URL: http://product-catalog:8080
@@ -81,8 +106,13 @@ services:
       - kafka
       - shipping
       - fraud-detection
+
   accounting:
-    build: ./src/accounting
+    image: ${REGISTRY}/shopsphere-accounting:latest
+    build:
+      context: ./src/accounting
+      cache_from:
+        - ${REGISTRY}/shopsphere-accounting:latest
     environment:
       DB_HOST: percona
       DB_PORT: 3306
@@ -96,15 +126,24 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
+
   frontend:
-    build: ./src/frontend
+    image: ${REGISTRY}/shopsphere-frontend:latest
+    build:
+      context: ./src/frontend
+      cache_from:
+        - ${REGISTRY}/shopsphere-frontend:latest
     depends_on:
       - product-catalog
       - cart
       - checkout
 
   frontend-proxy:
-    build: ./src/frontend-proxy
+    image: ${REGISTRY}/shopsphere-frontend-proxy:latest
+    build:
+      context: ./src/frontend-proxy
+      cache_from:
+        - ${REGISTRY}/shopsphere-frontend-proxy:latest
     ports:
       - "8080:8080"
     depends_on:
