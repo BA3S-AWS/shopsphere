@@ -18,21 +18,28 @@ runner-smoke-test:
     - find src -mindepth 1 -maxdepth 1 -type d | sort
     - echo "Validation initiale réussie"
 
-build-accounting:
+
+build-images:
   stage: build
   image:
     name: gcr.io/kaniko-project/executor:v1.23.2-debug
     entrypoint: [""]
   tags:
     - kubernetes
+  parallel:
+    matrix:
+      - SERVICE:
+          - accounting
+          - cart
   script:
+    - echo "Construction du microservice ${SERVICE}"
     - mkdir -p /kaniko/.docker
     - AUTH="$(printf '%s:%s' "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64 | tr -d '\n')"
     - printf '{"auths":{"%s":{"auth":"%s"}}}\n' "$CI_REGISTRY" "$AUTH" > /kaniko/.docker/config.json
     - >
       /kaniko/executor
-      --context "${CI_PROJECT_DIR}/src/accounting"
-      --dockerfile "${CI_PROJECT_DIR}/src/accounting/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/accounting:${CI_COMMIT_SHORT_SHA}"
-      --destination "${CI_REGISTRY_IMAGE}/accounting:latest"
+      --context "${CI_PROJECT_DIR}/src/${SERVICE}"
+      --dockerfile "${CI_PROJECT_DIR}/src/${SERVICE}/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}/${SERVICE}:${CI_COMMIT_SHORT_SHA}"
+      --destination "${CI_REGISTRY_IMAGE}/${SERVICE}:latest"
       --registry-certificate "${CI_REGISTRY}=${CI_SERVER_TLS_CA_FILE}"
