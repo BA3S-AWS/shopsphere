@@ -1,0 +1,18 @@
+stages:
+  - verify
+
+runner-smoke-test:
+  stage: verify
+  image: alpine:3.22
+  tags:
+    - kubernetes
+  script:
+    - echo "Runner Kubernetes ShopShore opérationnel"
+    - echo "Projet=$CI_PROJECT_PATH"
+    - echo "Branche=$CI_COMMIT_BRANCH"
+    - echo "Commit=$CI_COMMIT_SHORT_SHA"
+    - uname -a
+    - test -f README.md
+    - test -f docker-compose.yml
+    - find src -mindepth 1 -maxdepth 1 -type d | sort
+    - echo "Validation initiale réussie"
