@@ -1,6 +1,7 @@
 stages:
   - verify
   - build
+  - security
 
 runner-smoke-test:
   stage: verify
@@ -50,3 +51,48 @@ build-images:
       --destination "${CI_REGISTRY_IMAGE}/${SERVICE}:${CI_COMMIT_SHORT_SHA}"
       --destination "${CI_REGISTRY_IMAGE}/${SERVICE}:latest"
       --registry-certificate "${CI_REGISTRY}=${CI_SERVER_TLS_CA_FILE}"
+
+security-scan:
+  stage: security
+  image:
+    name: aquasec/trivy:0.74.0
+    entrypoint: [""]
+  tags:
+    - kubernetes
+  variables:
+    TRIVY_USERNAME: "$CI_REGISTRY_USER"
+    TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
+    SSL_CERT_FILE: "$CI_SERVER_TLS_CA_FILE"
+    TRIVY_CACHE_DIR: ".trivycache"
+  script:
+    - trivy --version
+    - |
+      for SERVICE in \
+        accounting \
+        cart \
+        checkout \
+        fraud-detection \
+        frontend \
+        frontend-proxy \
+        payment \
+        product-catalog \
+        shipping
+      do
+        echo "Analyse Trivy de ${SERVICE}:${CI_COMMIT_SHORT_SHA}"
+
+        trivy image \
+          --scanners vuln \
+          --severity HIGH,CRITICAL \
+          --ignore-unfixed \
+          --exit-code 0 \
+          --format table \
+          --output "trivy-${SERVICE}.txt" \
+          "${CI_REGISTRY_IMAGE}/${SERVICE}:${CI_COMMIT_SHORT_SHA}"
+
+        cat "trivy-${SERVICE}.txt"
+      done
+  artifacts:
+    when: always
+    paths:
+      - trivy-*.txt
+    expire_in: 1 week
