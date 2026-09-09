@@ -46,6 +46,9 @@ build-images:
     - printf '{"auths":{"%s":{"auth":"%s"}}}\n' "$CI_REGISTRY" "$AUTH" > /kaniko/.docker/config.json
     - >
       /kaniko/executor
+      --cache=true
+      --cache-ttl=24h
+      --cache-repo "${CI_REGISTRY_IMAGE}/cache"
       --context "${CI_PROJECT_DIR}/src/${SERVICE}"
       --dockerfile "${CI_PROJECT_DIR}/src/${SERVICE}/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/${SERVICE}:${CI_COMMIT_SHORT_SHA}"
@@ -84,7 +87,7 @@ security-scan:
           --scanners vuln \
           --severity HIGH,CRITICAL \
           --ignore-unfixed \
-          --exit-code 0 \
+          --exit-code 1 \
           --format table \
           --output "trivy-${SERVICE}.txt" \
           "${CI_REGISTRY_IMAGE}/${SERVICE}:${CI_COMMIT_SHORT_SHA}"
