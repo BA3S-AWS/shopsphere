@@ -31,6 +31,13 @@ build-images:
       - SERVICE:
           - accounting
           - cart
+          - checkout
+          - fraud-detection
+          - frontend
+          - frontend-proxy
+          - payment
+          - product-catalog
+          - shipping
   script:
     - echo "Construction du microservice ${SERVICE}"
     - mkdir -p /kaniko/.docker
