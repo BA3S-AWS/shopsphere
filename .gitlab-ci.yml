@@ -1,0 +1,102 @@
+stages:
+  - verify
+  - build
+  - security
+
+runner-smoke-test:
+  stage: verify
+  image: alpine:3.22
+  tags:
+    - kubernetes
+  script:
+    - echo "Runner Kubernetes ShopShore opérationnel"
+    - echo "Projet=$CI_PROJECT_PATH"
+    - echo "Branche=$CI_COMMIT_BRANCH"
+    - echo "Commit=$CI_COMMIT_SHORT_SHA"
+    - uname -a
+    - test -f README.md
+    - test -f docker-compose.yml
+    - find src -mindepth 1 -maxdepth 1 -type d | sort
+    - echo "Validation initiale réussie"
+
+
+build-images:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  tags:
+    - kubernetes
+  parallel:
+    matrix:
+      - SERVICE:
+          - accounting
+          - cart
+          - checkout
+          - fraud-detection
+          - frontend
+          - frontend-proxy
+          - payment
+          - product-catalog
+          - shipping
+  script:
+    - echo "Construction du microservice ${SERVICE}"
+    - mkdir -p /kaniko/.docker
+    - AUTH="$(printf '%s:%s' "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64 | tr -d '\n')"
+    - printf '{"auths":{"%s":{"auth":"%s"}}}\n' "$CI_REGISTRY" "$AUTH" > /kaniko/.docker/config.json
+    - >
+      /kaniko/executor
+      --cache=true
+      --cache-ttl=24h
+      --cache-repo "${CI_REGISTRY_IMAGE}/cache"
+      --context "${CI_PROJECT_DIR}/src/${SERVICE}"
+      --dockerfile "${CI_PROJECT_DIR}/src/${SERVICE}/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}/${SERVICE}:${CI_COMMIT_SHORT_SHA}"
+      --destination "${CI_REGISTRY_IMAGE}/${SERVICE}:latest"
+      --registry-certificate "${CI_REGISTRY}=${CI_SERVER_TLS_CA_FILE}"
+
+security-scan:
+  stage: security
+  image:
+    name: aquasec/trivy:0.74.0
+    entrypoint: [""]
+  tags:
+    - kubernetes
+  variables:
+    TRIVY_USERNAME: "$CI_REGISTRY_USER"
+    TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
+    SSL_CERT_FILE: "$CI_SERVER_TLS_CA_FILE"
+    TRIVY_CACHE_DIR: ".trivycache"
+  script:
+    - trivy --version
+    - |
+      for SERVICE in \
+        accounting \
+        cart \
+        checkout \
+        fraud-detection \
+        frontend \
+        frontend-proxy \
+        payment \
+        product-catalog \
+        shipping
+      do
+        echo "Analyse Trivy de ${SERVICE}:${CI_COMMIT_SHORT_SHA}"
+
+        trivy image \
+          --scanners vuln \
+          --severity HIGH,CRITICAL \
+          --ignore-unfixed \
+          --exit-code 1 \
+          --format table \
+          --output "trivy-${SERVICE}.txt" \
+          "${CI_REGISTRY_IMAGE}/${SERVICE}:${CI_COMMIT_SHORT_SHA}"
+
+        cat "trivy-${SERVICE}.txt"
+      done
+  artifacts:
+    when: always
+    paths:
+      - trivy-*.txt
+    expire_in: 1 week
+
