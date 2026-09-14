@@ -30,3 +30,27 @@ SELECT 'Ecran 27 pouces', 'Ecran QHD pour poste de travail', 349.00, 15
 WHERE NOT EXISTS (
     SELECT 1 FROM products WHERE name = 'Ecran 27 pouces'
 );
+
+INSERT INTO products (name, description, price, stock)
+SELECT 'Souris sans fil', 'Souris ergonomique pour travailler confortablement', 39.90, 40
+WHERE NOT EXISTS (
+    SELECT 1 FROM products WHERE name = 'Souris sans fil'
+);
+
+INSERT INTO products (name, description, price, stock)
+SELECT 'SSD 1 To', 'Stockage SSD pour applications et machines virtuelles', 89.90, 30
+WHERE NOT EXISTS (
+    SELECT 1 FROM products WHERE name = 'SSD 1 To'
+);
+
+INSERT INTO products (name, description, price, stock)
+SELECT 'Casque audio', 'Casque avec microphone pour les reunions', 59.90, 20
+WHERE NOT EXISTS (
+    SELECT 1 FROM products WHERE name = 'Casque audio'
+);
+
+INSERT INTO products (name, description, price, stock)
+SELECT 'Station USB-C', 'Station multiports pour ordinateur portable', 79.90, 18
+WHERE NOT EXISTS (
+    SELECT 1 FROM products WHERE name = 'Station USB-C'
+);
