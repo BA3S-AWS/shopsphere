@@ -110,7 +110,8 @@ sast-semgrep:
     - kubernetes
   script:
     - semgrep --version
-    - semgrep scan --config p/default --error --json --output semgrep-report.json src
+    - semgrep scan --config p/default --json --output semgrep-report.json src
+    - semgrep scan --config p/default --severity ERROR --error src
   artifacts:
     when: always
     paths:
