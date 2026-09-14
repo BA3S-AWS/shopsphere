@@ -1,5 +1,6 @@
 stages:
   - verify
+  - sast
   - build
   - security
 
@@ -98,4 +99,20 @@ security-scan:
     when: always
     paths:
       - trivy-*.txt
+    expire_in: 1 week
+
+sast-semgrep:
+  stage: sast
+  image:
+    name: semgrep/semgrep:latest
+    entrypoint: [""]
+  tags:
+    - kubernetes
+  script:
+    - semgrep --version
+    - semgrep scan --config p/default --error --json --output semgrep-report.json src
+  artifacts:
+    when: always
+    paths:
+      - semgrep-report.json
     expire_in: 1 week
