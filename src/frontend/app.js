@@ -1,6 +1,12 @@
 const productsContainer = document.getElementById("products");
 const cartContainer = document.getElementById("cart");
-const userId = "demo-user";
+let userId = localStorage.getItem("shopsphere-user-id");
+
+if (!userId) {
+    userId = `user-${crypto.randomUUID()}`;
+    localStorage.setItem("shopsphere-user-id", userId);
+}
+
 async function loadProducts() {
 try {
 const response = await fetch("/api/products");
