@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+        "strconv"
 	"strings"
 )
 
@@ -76,6 +77,73 @@ func cartHandler(store *CartStore) http.HandlerFunc {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
 			json.NewEncoder(w).Encode(cart)
+                case http.MethodPut:
+                        var updatedCart Cart
+
+                        if err := json.NewDecoder(r.Body).Decode(&updatedCart); err != nil {
+                                http.Error(w, "Invalid request", http.StatusBadRequest)
+                                return
+                        }
+
+                        updatedCart.UserID = userID
+
+                        if err := store.saveCart(updatedCart); err != nil {
+                                http.Error(w, "Unable to update cart", http.StatusInternalServerError)
+                                return
+                        }
+
+                        w.Header().Set("Content-Type", "application/json")
+                        json.NewEncoder(w).Encode(updatedCart)
+
+                case http.MethodDelete:
+                        productIDValue := r.URL.Query().Get("product_id")
+
+                        // Sans product_id : vider entièrement le panier.
+                        if productIDValue == "" {
+                                if err := store.deleteCart(userID); err != nil {
+                                        http.Error(w, "Unable to delete cart", http.StatusInternalServerError)
+                                        return
+                                }
+
+                                w.WriteHeader(http.StatusNoContent)
+                                return
+                        }
+
+                        // Avec product_id : supprimer uniquement cet article.
+                        productID, err := strconv.Atoi(productIDValue)
+                        if err != nil {
+                                http.Error(w, "Invalid product_id", http.StatusBadRequest)
+                                return
+                        }
+
+                        cart, err := store.getCart(userID)
+                        if err != nil {
+                                http.Error(w, "Cart not found", http.StatusNotFound)
+                                return
+                        }
+
+                        remainingItems := make([]CartItem, 0, len(cart.Items))
+
+                        for _, item := range cart.Items {
+                                if item.ProductID != productID {
+                                        remainingItems = append(remainingItems, item)
+                                }
+                        }
+
+                        cart.Items = remainingItems
+
+                        if len(cart.Items) == 0 {
+                                if err := store.deleteCart(userID); err != nil {
+                                        http.Error(w, "Unable to delete cart", http.StatusInternalServerError)
+                                        return
+                                }
+                        } else if err := store.saveCart(cart); err != nil {
+                                http.Error(w, "Unable to update cart", http.StatusInternalServerError)
+                                return
+                        }
+
+                        w.Header().Set("Content-Type", "application/json")
+                        json.NewEncoder(w).Encode(cart)
 
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

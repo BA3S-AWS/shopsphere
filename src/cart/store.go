@@ -57,3 +57,9 @@ func (s *CartStore) getCart(userID string) (Cart, error) {
 
 	return cart, nil
 }
+
+func (s *CartStore) deleteCart(userID string) error {
+        key := "cart:" + userID
+
+        return s.client.Del(ctx, key).Err()
+}
