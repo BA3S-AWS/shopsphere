@@ -873,91 +873,185 @@ async function clearCart() {
 // CHECKOUT
 // ======================================================
 
-async function checkout() {
+const paymentDialog =
+    document.getElementById("payment-dialog");
+
+const paymentForm =
+    document.getElementById("payment-form");
+
+const cancelPaymentButton =
+    document.getElementById("cancel-payment-button");
+
+const confirmPaymentButton =
+    document.getElementById("confirm-payment-button");
+
+
+function checkout() {
+
+    if (!paymentDialog) {
+        showToast(
+            "Formulaire de paiement indisponible",
+            true
+        );
+
+        return;
+    }
+
+    paymentDialog.showModal();
+}
+
+
+function closePaymentDialog() {
+
+    paymentDialog.close();
+}
+
+
+async function processPayment(event) {
+
+    event.preventDefault();
+
+    const cardNumber =
+        document
+            .getElementById("card-number")
+            .value
+            .replace(/\s/g, "");
+
+    const cardExpiry =
+        document
+            .getElementById("card-expiry")
+            .value
+            .trim();
+
+    const cardCvv =
+        document
+            .getElementById("card-cvv")
+            .value
+            .trim();
+
+    if (!/^\d{16}$/.test(cardNumber)) {
+
+        showToast(
+            "Le numéro de carte doit contenir 16 chiffres",
+            true
+        );
+
+        return;
+    }
+
+    if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
+
+        showToast(
+            "La date doit respecter le format MM/AA",
+            true
+        );
+
+        return;
+    }
+
+    if (!/^\d{3}$/.test(cardCvv)) {
+
+        showToast(
+            "Le CVV doit contenir 3 chiffres",
+            true
+        );
+
+        return;
+    }
+
     const order = {
         user_id: userId,
-        card_number: "4111111111111111",
-        card_expiry: "12/30",
-        card_cvv: "123"
+        card_number: cardNumber,
+        card_expiry: cardExpiry,
+        card_cvv: cardCvv
     };
 
-    checkoutButton.disabled = true;
-    checkoutButton.textContent = "Traitement en cours...";
+    confirmPaymentButton.disabled = true;
+    confirmPaymentButton.textContent =
+        "Paiement en cours...";
 
     try {
+
         const response =
             await fetch("/api/checkout", {
+
                 method: "POST",
+
                 headers: {
                     "Content-Type":
                         "application/json"
                 },
+
                 body: JSON.stringify(order)
             });
 
+
         if (!response.ok) {
+
             const text =
                 await response.text();
-            throw new Error(
-                `Checkout ${response.status}: ${text}`
+
+            console.error(
+                "Erreur checkout:",
+                response.status,
+                text
             );
+
+            showToast(
+                "Le paiement a été refusé",
+                true
+            );
+
+            return;
         }
+
 
         const result =
             await response.json();
 
+
         const clearResponse =
-            await fetch(`/api/cart/${userId}`, {
-                method: "DELETE"
-            });
+            await fetch(
+                `/api/cart/${userId}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
 
         if (!clearResponse.ok) {
+
             console.warn(
                 "Commande créée, mais panier non vidé"
             );
         }
 
-        cartItemsContainer.innerHTML = `
-            <section class="order-confirmation">
-                <div class="order-confirmation-icon">✓</div>
-                <h3>Commande confirmée</h3>
-                <p>Votre paiement de test a été accepté.</p>
-                <dl>
-                    <div>
-                        <dt>Numéro</dt>
-                        <dd>${result.order_id}</dd>
-                    </div>
-                    <div>
-                        <dt>Montant</dt>
-                        <dd>${formatPrice(result.total)}</dd>
-                    </div>
-                    <div>
-                        <dt>Statut</dt>
-                        <dd>${result.status}</dd>
-                    </div>
-                    <div>
-                        <dt>Livraison estimée</dt>
-                        <dd>${result.estimated_days} jours</dd>
-                    </div>
-                </dl>
-            </section>
-        `;
 
-        cartCount.textContent = "0";
-        cartTotal.textContent = "0,00 €";
-        checkoutButton.textContent = "Commande confirmée";
+        paymentForm.reset();
+        closePaymentDialog();
+        closeCart();
 
-        showToast(`Commande ${result.order_id} confirmée ✓`);
+        await loadCart();
+
+
+        showToast(
+            `Paiement accepté ✓ Commande ${result.order_id}`
+        );
 
     } catch (error) {
+
         console.error(error);
+
         showToast(
-            "Impossible de finaliser la commande",
+            "Erreur pendant le paiement",
             true
         );
 
-        checkoutButton.disabled = false;
-        checkoutButton.textContent = "🔒 Passer la commande";
+    } finally {
+
+        confirmPaymentButton.disabled = false;
+        confirmPaymentButton.textContent =
+            "Payer et commander";
     }
 }
 
@@ -967,6 +1061,17 @@ checkoutButton.addEventListener(
     checkout
 );
 
+
+cancelPaymentButton.addEventListener(
+    "click",
+    closePaymentDialog
+);
+
+
+paymentForm.addEventListener(
+    "submit",
+    processPayment
+);
 
 // ======================================================
 // INITIALISATION
