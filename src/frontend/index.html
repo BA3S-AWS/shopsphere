@@ -775,6 +775,7 @@
             overflow-wrap: anywhere;
         }
 
+
         /* ======================================================
            TOAST
         ====================================================== */
@@ -1215,6 +1216,118 @@
 </footer>
 
 
+<!-- ============================================================
+     PAYMENT DIALOG
+============================================================ -->
+
+<dialog id="payment-dialog" style="
+    width: min(92vw, 460px);
+    border: 0;
+    border-radius: 20px;
+    padding: 0;
+    box-shadow: 0 25px 70px rgba(15, 23, 42, 0.35);
+">
+    <form id="payment-form" style="padding: 28px;">
+        <h2 style="margin: 0 0 8px;">
+            💳 Paiement sécurisé
+        </h2>
+
+        <p style="margin: 0 0 22px; color: #64748b;">
+            Transaction de démonstration ShopSphere
+        </p>
+
+        <label for="card-holder">Titulaire de la carte</label>
+        <input
+            id="card-holder"
+            name="card-holder"
+            type="text"
+            autocomplete="cc-name"
+            placeholder="Ali Talaoumghar"
+            required
+            style="width: 100%; box-sizing: border-box; padding: 12px;
+                   margin: 6px 0 16px; border: 1px solid #cbd5e1;
+                   border-radius: 10px;"
+        >
+
+        <label for="card-number">Numéro de carte de test</label>
+        <input
+            id="card-number"
+            name="card-number"
+            type="text"
+            inputmode="numeric"
+            autocomplete="cc-number"
+            value="4111111111111111"
+            maxlength="19"
+            required
+            style="width: 100%; box-sizing: border-box; padding: 12px;
+                   margin: 6px 0 16px; border: 1px solid #cbd5e1;
+                   border-radius: 10px;"
+        >
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div>
+                <label for="card-expiry">Expiration</label>
+                <input
+                    id="card-expiry"
+                    name="card-expiry"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="cc-exp"
+                    value="12/30"
+                    placeholder="MM/AA"
+                    maxlength="5"
+                    required
+                    style="width: 100%; box-sizing: border-box; padding: 12px;
+                           margin-top: 6px; border: 1px solid #cbd5e1;
+                           border-radius: 10px;"
+                >
+            </div>
+
+            <div>
+                <label for="card-cvv">CVV</label>
+                <input
+                    id="card-cvv"
+                    name="card-cvv"
+                    type="password"
+                    inputmode="numeric"
+                    autocomplete="cc-csc"
+                    value="123"
+                    placeholder="123"
+                    maxlength="3"
+                    required
+                    style="width: 100%; box-sizing: border-box; padding: 12px;
+                           margin-top: 6px; border: 1px solid #cbd5e1;
+                           border-radius: 10px;"
+                >
+            </div>
+        </div>
+
+        <p style="font-size: 13px; color: #64748b; margin: 18px 0;">
+            🔒 Aucun paiement réel ne sera effectué.
+        </p>
+
+        <div style="display: flex; gap: 12px;">
+            <button
+                id="cancel-payment-button"
+                type="button"
+                style="flex: 1; padding: 13px; border-radius: 10px;
+                       border: 1px solid #cbd5e1; background: white;"
+            >
+                Annuler
+            </button>
+
+            <button
+                id="confirm-payment-button"
+                type="submit"
+                style="flex: 2; padding: 13px; border: 0;
+                       border-radius: 10px; color: white;
+                       background: #2563eb; font-weight: 700;"
+            >
+                Payer et commander
+            </button>
+        </div>
+    </form>
+</dialog>
 <script src="app.js"></script>
 
 </body>
