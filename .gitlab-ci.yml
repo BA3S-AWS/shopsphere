@@ -29,6 +29,10 @@ build-images:
     entrypoint: [""]
   tags:
     - kubernetes
+  rules:
+    - changes:
+        - "src/**/*"
+    - when: never
   parallel:
     matrix:
       - SERVICE:
@@ -64,6 +68,10 @@ security-scan:
     entrypoint: [""]
   tags:
     - kubernetes
+  rules:
+    - changes:
+        - "src/**/*"
+    - when: never
   variables:
     TRIVY_USERNAME: "$CI_REGISTRY_USER"
     TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
