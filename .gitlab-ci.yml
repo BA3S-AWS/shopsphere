@@ -3,6 +3,7 @@ stages:
   - sast
   - build
   - security
+  - dast
 
 runner-smoke-test:
   stage: verify
@@ -117,3 +118,50 @@ sast-semgrep:
     paths:
       - semgrep-report.json
     expire_in: 1 week
+
+dast-zap:
+  stage: dast
+  image:
+    name: ghcr.io/zaproxy/zaproxy:stable
+    entrypoint: [""]
+  tags:
+    - kubernetes
+  variables:
+    DAST_TARGET_URL: "https://shopsphere.ba3s.abrdns.com"
+  script:
+    - echo "Analyse DAST passive de ${DAST_TARGET_URL}"
+    - |
+      set +e
+
+      zap-baseline.py \
+        -t "${DAST_TARGET_URL}" \
+        -m 1 \
+        -I \
+        -r zap-report.html \
+        -J zap-report.json \
+        -w zap-report.md
+
+      ZAP_EXIT=$?
+      set -e
+
+      cp /zap/wrk/zap-report.html "${CI_PROJECT_DIR}/" 2>/dev/null || true
+      cp /zap/wrk/zap-report.json "${CI_PROJECT_DIR}/" 2>/dev/null || true
+      cp /zap/wrk/zap-report.md "${CI_PROJECT_DIR}/" 2>/dev/null || true
+
+      if [ "${ZAP_EXIT}" -eq 3 ]; then
+        echo "Échec technique du scan ZAP"
+        exit 3
+      fi
+
+      echo "Scan DAST terminé avec le code ${ZAP_EXIT}"
+  artifacts:
+    when: always
+    paths:
+      - zap-report.html
+      - zap-report.json
+      - zap-report.md
+    expire_in: 1 week
+  allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
