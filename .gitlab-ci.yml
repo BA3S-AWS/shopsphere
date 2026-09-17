@@ -136,8 +136,10 @@ dast-zap:
     - kubernetes
   variables:
     DAST_TARGET_URL: "https://shopsphere.ba3s.abrdns.com"
+
   script:
     - echo "Analyse DAST passive de ${DAST_TARGET_URL}"
+    - mkdir -p /zap/wrk
     - |
       set +e
 
