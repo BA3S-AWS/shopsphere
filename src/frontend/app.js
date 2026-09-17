@@ -92,6 +92,8 @@ const response = await fetch(`/api/cart/${userId}`);
 }
 
 async function checkout() {
+    const checkoutButton = document.getElementById("checkout-button");
+
     const order = {
         user_id: userId,
         card_number: "4111111111111111",
@@ -99,20 +101,83 @@ async function checkout() {
         card_cvv: "123"
     };
 
-    const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(order)
-    });
+    checkoutButton.disabled = true;
+    checkoutButton.textContent = "Traitement en cours...";
 
-    if (response.ok) {
+    try {
+        const response = await fetch("/api/checkout", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(order)
+        });
+
+        if (!response.ok) {
+            const message = await response.text();
+
+            throw new Error(
+                `Checkout ${response.status}: ${message}`
+            );
+        }
+
         const result = await response.json();
 
-        alert(`Commande créée : ${result.order_id}`);
-    } else {
-        alert("Impossible de créer la commande");
+        // La commande est créée : vider le panier.
+        const clearResponse = await fetch(
+            `/api/cart/${userId}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        if (!clearResponse.ok) {
+            console.warn(
+                "Commande créée, mais panier non vidé"
+            );
+        }
+
+        cartContainer.innerHTML = `
+            <section class="order-confirmation">
+                <h2>✅ Commande confirmée</h2>
+
+                <p>
+                    Votre paiement de test a été accepté.
+                </p>
+
+                <p>
+                    <strong>Commande :</strong>
+                    ${result.order_id}
+                </p>
+
+                <p>
+                    <strong>Montant :</strong>
+                    ${Number(result.total).toFixed(2)} €
+                </p>
+
+                <p>
+                    <strong>Statut :</strong>
+                    ${result.status}
+                </p>
+
+                <p>
+                    <strong>Livraison estimée :</strong>
+                    ${result.estimated_days} jours
+                </p>
+            </section>
+        `;
+
+        checkoutButton.textContent = "Commande confirmée";
+    } catch (error) {
+        console.error(error);
+
+        alert(
+            "Impossible de finaliser la commande. " +
+            "Veuillez réessayer."
+        );
+
+        checkoutButton.disabled = false;
+        checkoutButton.textContent = "Commander";
     }
 }
 
