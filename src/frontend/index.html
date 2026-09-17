@@ -3,29 +3,1219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShopShore</title>
+
+    <title>ShopSphere - Your DevOps Shop</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --blue: #1769ff;
+            --blue-dark: #06368c;
+            --navy: #061a44;
+            --green: #12ad58;
+            --text: #101828;
+            --muted: #667085;
+            --background: #f5f8fd;
+            --border: #e6ebf2;
+            --white: #ffffff;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+
+            background: var(--background);
+            color: var(--text);
+        }
+
+        button,
+        a {
+            font-family: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        /* ======================================================
+           HEADER
+        ====================================================== */
+
+        .site-header {
+            height: 78px;
+            background: rgba(255, 255, 255, 0.98);
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 3px 18px rgba(0,0,0,0.04);
+        }
+
+        .header-inner {
+            width: 100%;
+            max-width: 1500px;
+            margin: auto;
+
+            display: grid;
+            grid-template-columns: auto minmax(260px, 520px) 1fr auto;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--navy);
+            font-weight: 800;
+            font-size: 25px;
+            white-space: nowrap;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0d5ee8, #3785ff);
+            display: grid;
+            place-items: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 8px 18px rgba(23,105,255,.25);
+        }
+
+        .logo span {
+            color: var(--blue);
+        }
+
+        .logo-subtitle {
+            display: block;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--muted);
+            margin-top: -2px;
+        }
+
+        .search-box {
+            height: 46px;
+            border: 1px solid #d7deea;
+            border-radius: 24px;
+            background: #f8faff;
+
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            gap: 10px;
+        }
+
+        .search-box input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 15px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--navy);
+            font-weight: 650;
+            font-size: 15px;
+        }
+
+        nav a:hover {
+            color: var(--blue);
+        }
+
+        .cart-header-button {
+            border: none;
+            background: var(--blue);
+            color: white;
+            padding: 13px 18px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            box-shadow: 0 8px 20px rgba(23,105,255,.22);
+            position: relative;
+        }
+
+        .cart-count {
+            background: #ff3b30;
+            color: white;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 50px;
+            font-size: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            position: absolute;
+            right: -8px;
+            top: -8px;
+        }
+
+        /* ======================================================
+           HERO
+        ====================================================== */
+
+        .hero {
+            min-height: 420px;
+            position: relative;
+            overflow: hidden;
+
+            background:
+                radial-gradient(circle at 80% 35%, rgba(39,114,255,.42), transparent 28%),
+                radial-gradient(circle at 55% 70%, rgba(21,89,220,.30), transparent 26%),
+                linear-gradient(105deg, #031538 0%, #08265d 46%, #0747b4 100%);
+
+            color: white;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+
+            background-image:
+                linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+
+            background-size: 42px 42px;
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 2;
+
+            max-width: 1500px;
+            min-height: 420px;
+            margin: auto;
+            padding: 55px 5%;
+
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 50px;
+        }
+
+        .hero-copy {
+            max-width: 650px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+
+            background: rgba(255,255,255,.10);
+            border: 1px solid rgba(255,255,255,.16);
+
+            padding: 8px 14px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+
+            font-size: 13px;
+        }
+
+        .hero h1 {
+            font-size: clamp(42px, 4.5vw, 68px);
+            line-height: 1.02;
+            letter-spacing: -2px;
+            margin-bottom: 22px;
+        }
+
+        .hero h1 span {
+            color: #63a0ff;
+        }
+
+        .hero p {
+            font-size: 19px;
+            line-height: 1.6;
+            color: #e1eaff;
+            max-width: 600px;
+        }
+
+        .hero-button {
+            display: inline-block;
+            margin-top: 28px;
+
+            background: var(--blue);
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+
+            padding: 15px 24px;
+            border-radius: 10px;
+            box-shadow: 0 10px 26px rgba(0,0,0,.22);
+        }
+
+        /* ordinateur illustré du hero */
+
+        .hero-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .desk-scene {
+            width: min(610px, 100%);
+            height: 300px;
+            position: relative;
+        }
+
+        .monitor-glow {
+            position: absolute;
+            width: 420px;
+            height: 230px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -53%);
+
+            background: rgba(50,130,255,.20);
+            filter: blur(45px);
+            border-radius: 50%;
+        }
+
+        .laptop {
+            position: absolute;
+            width: 390px;
+            left: 50%;
+            top: 48%;
+            transform: translate(-50%, -50%);
+        }
+
+        .laptop-screen {
+            height: 230px;
+            border: 12px solid #151a26;
+            border-radius: 14px 14px 8px 8px;
+
+            background:
+                radial-gradient(circle at 70% 28%, #f191ff, transparent 18%),
+                linear-gradient(135deg, #152557, #126be8 45%, #8b43d5 100%);
+
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 45px rgba(0,0,0,.35);
+        }
+
+        .laptop-screen::before {
+            content: "";
+            position: absolute;
+            width: 280px;
+            height: 150px;
+            background: linear-gradient(140deg, transparent 45%, rgba(255,255,255,.17) 46%);
+            transform: rotate(-5deg);
+            left: 40px;
+            top: 60px;
+        }
+
+        .terminal {
+            position: absolute;
+            left: 28px;
+            top: 35px;
+
+            width: 170px;
+            height: 115px;
+
+            background: rgba(5,15,37,.78);
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 8px;
+
+            padding: 14px;
+            font-family: monospace;
+            font-size: 10px;
+            color: #75ffaa;
+            line-height: 1.6;
+        }
+
+        .laptop-base {
+            height: 20px;
+            margin: auto;
+            width: 440px;
+            margin-left: -25px;
+
+            background: linear-gradient(#d8dde8, #777f91);
+            border-radius: 3px 3px 15px 15px;
+
+            box-shadow: 0 15px 30px rgba(0,0,0,.35);
+        }
+
+        .devops-cup {
+            position: absolute;
+            right: 8px;
+            bottom: 25px;
+
+            width: 105px;
+            height: 120px;
+
+            background: #08152d;
+            border-radius: 8px 8px 22px 22px;
+            box-shadow: 0 16px 30px rgba(0,0,0,.32);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: white;
+            font-weight: 800;
+            font-size: 15px;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        /* ======================================================
+           FEATURES
+        ====================================================== */
+
+        .features {
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .features-inner {
+            max-width: 1500px;
+            margin: auto;
+            padding: 22px 5%;
+
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+        }
+
+        .feature {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .feature-icon {
+            font-size: 27px;
+        }
+
+        .feature strong {
+            display: block;
+            font-size: 14px;
+            color: var(--navy);
+        }
+
+        .feature span {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* ======================================================
+           PRODUCT SECTION
+        ====================================================== */
+
+        .products-section {
+            max-width: 1500px;
+            margin: auto;
+            padding: 52px 5% 80px;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            margin-bottom: 26px;
+        }
+
+        .section-heading h2 {
+            font-size: 31px;
+            color: var(--navy);
+        }
+
+        .section-heading p {
+            color: var(--muted);
+            margin-top: 7px;
+        }
+
+        #products {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .product-card {
+            background: white;
+            border: 1px solid #ebeff5;
+            border-radius: 16px;
+            overflow: hidden;
+
+            box-shadow: 0 8px 25px rgba(16,24,40,.07);
+            transition: transform .22s ease, box-shadow .22s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(16,24,40,.12);
+        }
+
+        .product-image {
+            height: 260px;
+            background: linear-gradient(135deg, #eef3fb, #dfe8f8);
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image svg {
+            width: 82%;
+            height: 82%;
+        }
+
+        .new-badge {
+            position: absolute;
+            left: 14px;
+            top: 14px;
+
+            background: var(--blue);
+            color: white;
+
+            padding: 7px 11px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .product-content {
+            padding: 20px;
+        }
+
+        .product-content h3 {
+            color: var(--navy);
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .product-description {
+            color: var(--muted);
+            min-height: 46px;
+            line-height: 1.45;
+        }
+
+        .product-price {
+            font-size: 23px;
+            font-weight: 800;
+            color: var(--text);
+            margin: 14px 0 10px;
+        }
+
+        .stock {
+            color: #344054;
+            margin-bottom: 17px;
+        }
+
+        .add-cart-button {
+            width: 100%;
+            border: none;
+            border-radius: 9px;
+
+            background: var(--blue);
+            color: white;
+
+            padding: 13px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .add-cart-button:hover {
+            background: #0758df;
+        }
+
+        /* ======================================================
+           CART DRAWER
+        ====================================================== */
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2,10,25,.45);
+
+            opacity: 0;
+            visibility: hidden;
+
+            transition: .25s;
+            z-index: 1998;
+        }
+
+        .overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .cart-drawer {
+            position: fixed;
+            top: 0;
+            right: -470px;
+
+            width: min(460px, 100vw);
+            height: 100vh;
+
+            background: white;
+            z-index: 1999;
+
+            display: flex;
+            flex-direction: column;
+
+            box-shadow: -15px 0 45px rgba(0,0,0,.18);
+            transition: right .3s ease;
+        }
+
+        .cart-drawer.open {
+            right: 0;
+        }
+
+        .cart-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cart-header h2 {
+            font-size: 24px;
+            color: var(--navy);
+        }
+
+        .close-cart {
+            width: 38px;
+            height: 38px;
+
+            border: none;
+            background: #f1f4f8;
+            border-radius: 50%;
+
+            font-size: 21px;
+        }
+
+        #cart-items {
+            padding: 10px 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .cart-empty {
+            padding: 70px 20px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 74px 1fr auto;
+            gap: 13px;
+
+            align-items: center;
+            padding: 18px 0;
+
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cart-item-image {
+            width: 74px;
+            height: 68px;
+            border-radius: 9px;
+            background: #edf2fa;
+
+            display: grid;
+            place-items: center;
+        }
+
+        .cart-item-image svg {
+            width: 90%;
+            height: 90%;
+        }
+
+        .cart-item-name {
+            font-weight: 750;
+            color: var(--navy);
+            font-size: 14px;
+        }
+
+        .cart-item-price {
+            margin-top: 4px;
+            font-weight: 700;
+        }
+
+        .cart-item-quantity {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+
+        .cart-footer {
+            border-top: 1px solid var(--border);
+            padding: 20px 24px 28px;
+            background: white;
+        }
+
+        .cart-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 17px;
+        }
+
+        .checkout-button {
+            width: 100%;
+            border: none;
+
+            background: var(--green);
+            color: white;
+
+            border-radius: 9px;
+            padding: 15px;
+
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .checkout-button:hover {
+            background: #0d984c;
+        }
+
+        .checkout-button:disabled {
+            cursor: not-allowed;
+            opacity: .7;
+        }
+
+        .order-confirmation {
+            margin: 28px 0;
+            padding: 26px 22px;
+            border: 1px solid #b8ead0;
+            border-radius: 14px;
+            background: #f0fff7;
+            color: var(--navy);
+            text-align: center;
+        }
+
+        .order-confirmation-icon {
+            width: 54px;
+            height: 54px;
+            margin: 0 auto 14px;
+            border-radius: 50%;
+            background: var(--green);
+            color: white;
+            display: grid;
+            place-items: center;
+            font-size: 30px;
+            font-weight: 800;
+        }
+
+        .order-confirmation h3 {
+            margin-bottom: 8px;
+            font-size: 22px;
+        }
+
+        .order-confirmation dl {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .order-confirmation dl div {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 10px 0;
+            border-bottom: 1px solid #d4f1e1;
+        }
+
+        .order-confirmation dt {
+            color: var(--muted);
+        }
+
+        .order-confirmation dd {
+            margin: 0;
+            font-weight: 750;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        /* ======================================================
+           TOAST
+        ====================================================== */
+
+        .toast {
+            position: fixed;
+            right: 28px;
+            bottom: 28px;
+
+            background: #0fa958;
+            color: white;
+
+            min-width: 290px;
+            padding: 16px 20px;
+
+            border-radius: 10px;
+
+            box-shadow: 0 12px 35px rgba(0,0,0,.2);
+
+            transform: translateY(140px);
+            opacity: 0;
+            transition: .3s;
+
+            z-index: 3000;
+            font-weight: 700;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        /* ======================================================
+           FOOTER
+        ====================================================== */
+
+        footer {
+            background: #061a44;
+            color: #c7d3ea;
+            padding: 34px 5%;
+            text-align: center;
+        }
+
+        footer strong {
+            color: white;
+        }
+
+        /* ======================================================
+           RESPONSIVE
+        ====================================================== */
+
+        @media (max-width: 1050px) {
+
+            .header-inner {
+                grid-template-columns: auto 1fr auto;
+            }
+
+            .search-box {
+                display: none;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .hero-inner {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-visual {
+                display: none;
+            }
+
+            #products {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 720px) {
+
+            .site-header {
+                padding: 0 18px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .hero-inner {
+                padding: 45px 22px;
+            }
+
+            .hero h1 {
+                font-size: 42px;
+            }
+
+            .features-inner {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .products-section {
+                padding: 40px 18px 60px;
+            }
+
+            #products {
+                grid-template-columns: 1fr;
+            }
+
+            .section-heading {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+    </style>
 </head>
 
 <body>
-    <h1>ShopShore</h1>
-    <p>Plateforme e-commerce Cloud Native</p>
 
-    <h2>Nos produits</h2>
+<!-- ============================================================
+     HEADER
+============================================================ -->
+
+<header class="site-header">
+
+    <div class="header-inner">
+
+        <a href="#" class="logo">
+
+            <div class="logo-icon">
+                🛍
+            </div>
+
+            <div>
+                Shop<span>Sphere</span>
+                <small class="logo-subtitle">Your DevOps Shop</small>
+            </div>
+
+        </a>
+
+        <div class="search-box">
+
+            🔎
+
+            <input
+                type="text"
+                id="search-input"
+                placeholder="Rechercher un produit..."
+            >
+
+        </div>
+
+        <nav>
+            <a href="#">Accueil</a>
+            <a href="#products-section">Produits</a>
+            <a href="#about">À propos</a>
+        </nav>
+
+        <button
+            class="cart-header-button"
+            id="open-cart-button"
+            type="button"
+        >
+            🛒 Panier
+
+            <span
+                class="cart-count"
+                id="cart-count"
+            >
+                0
+            </span>
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- ============================================================
+     HERO
+============================================================ -->
+
+<section class="hero">
+
+    <div class="hero-inner">
+
+        <div class="hero-copy">
+
+            <div class="hero-badge">
+                ⚡ Cloud Native • DevOps • SRE
+            </div>
+
+            <h1>
+                Équipez vos idées<br>
+                <span>pour aller plus loin</span>
+            </h1>
+
+            <p>
+                Découvrez notre sélection de matériel pensée pour
+                les développeurs, les équipes DevOps et les passionnés
+                de technologie.
+            </p>
+
+            <a
+                href="#products-section"
+                class="hero-button"
+            >
+                Découvrir nos produits →
+            </a>
+
+        </div>
+
+
+        <div class="hero-visual">
+
+            <div class="desk-scene">
+
+                <div class="monitor-glow"></div>
+
+                <div class="laptop">
+
+                    <div class="laptop-screen">
+
+                        <div class="terminal">
+                            $ kubectl get pods<br>
+                            frontend Running<br>
+                            checkout Running<br>
+                            payment Running<br>
+                            kafka Running<br><br>
+                            ✓ ShopSphere Ready
+                        </div>
+
+                    </div>
+
+                    <div class="laptop-base"></div>
+
+                </div>
+
+                <div class="devops-cup">
+                    CODE<br>
+                    DEPLOY<br>
+                    SCALE
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     SERVICES
+============================================================ -->
+
+<section class="features">
+
+    <div class="features-inner">
+
+        <div class="feature">
+
+            <div class="feature-icon">🚚</div>
+
+            <div>
+                <strong>Livraison rapide</strong>
+                <span>Partout en France</span>
+            </div>
+
+        </div>
+
+        <div class="feature">
+
+            <div class="feature-icon">🛡️</div>
+
+            <div>
+                <strong>Paiement sécurisé</strong>
+                <span>Transactions protégées</span>
+            </div>
+
+        </div>
+
+        <div class="feature">
+
+            <div class="feature-icon">📦</div>
+
+            <div>
+                <strong>Produits de qualité</strong>
+                <span>Sélectionnés pour vous</span>
+            </div>
+
+        </div>
+
+        <div class="feature">
+
+            <div class="feature-icon">🎧</div>
+
+            <div>
+                <strong>Support</strong>
+                <span>Une question ? On vous aide</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     PRODUCTS
+============================================================ -->
+
+<main
+    class="products-section"
+    id="products-section"
+>
+
+    <div class="section-heading">
+
+        <div>
+
+            <h2>Nos produits</h2>
+
+            <p>
+                Une sélection pensée pour votre environnement de travail.
+            </p>
+
+        </div>
+
+    </div>
 
     <div id="products">
-    <p>Chargement du catalogue...</p>
+
+        <p>Chargement du catalogue...</p>
+
     </div>
-    
-    <h2>Mon panier</h2>
 
-    <div id="cart">
-    <p>Panier vide.</p>
+</main>
+
+
+<!-- ============================================================
+     CART
+============================================================ -->
+
+<div
+    class="overlay"
+    id="cart-overlay"
+></div>
+
+
+<aside
+    class="cart-drawer"
+    id="cart-drawer"
+>
+
+    <div class="cart-header">
+
+        <h2>
+            🛒 Mon panier
+        </h2>
+
+        <button
+            class="close-cart"
+            id="close-cart-button"
+            type="button"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <div id="cart-items">
+
+        <div class="cart-empty">
+            Votre panier est vide.
+        </div>
+
+    </div>
+
+
+    <div class="cart-footer">
+
+        <div class="cart-total-row">
+
+            <span>Total</span>
+
+            <span id="cart-total">
+                0,00 €
+            </span>
+
+        </div>
+
+        <button
+            class="checkout-button"
+            id="checkout-button"
+            type="button"
+        >
+            🔒 Passer la commande
+        </button>
+
+    </div>
+
+</aside>
+
+
+<!-- ============================================================
+     TOAST
+============================================================ -->
+
+<div
+    class="toast"
+    id="toast"
+>
+    Produit ajouté au panier ✓
 </div>
-   
-    <button id="checkout-button" onclick="checkout()">
-    Commander
-</button>
 
-    <script src="app.js"></script>
+
+<!-- ============================================================
+     FOOTER
+============================================================ -->
+
+<footer id="about">
+
+    <strong>ShopSphere</strong>
+    — Plateforme e-commerce Cloud Native
+
+    <br><br>
+
+    Kubernetes • GitLab CI/CD • Kafka • Percona • Valkey
+
+</footer>
+
+
+<script src="app.js"></script>
+
 </body>
 </html>
