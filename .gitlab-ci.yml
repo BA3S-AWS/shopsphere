@@ -4,6 +4,7 @@ stages:
   - build
   - security
   - dast
+  - gitops
 
 runner-smoke-test:
   stage: verify
@@ -175,3 +176,90 @@ dast-zap:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
+
+update-gitops-tag:
+  stage: gitops
+  image: alpine:3.22
+  tags:
+    - kubernetes
+
+  resource_group: shopsphere-gitops-update
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - "src/**/*"
+    - when: never
+
+  script:
+    - |
+      set -eu
+
+      echo "Installation de Git"
+      apk add --no-cache git ca-certificates
+
+      if [ -z "${GITOPS_TOKEN:-}" ]; then
+        echo "La variable GITOPS_TOKEN est absente"
+        exit 1
+      fi
+
+      export GIT_SSL_CAINFO="${CI_SERVER_TLS_CA_FILE}"
+
+      git config --global http.sslCAInfo \
+        "${CI_SERVER_TLS_CA_FILE}"
+
+      git config --global user.name \
+        "ShopSphere GitLab CI"
+
+      git config --global user.email \
+        "shopsphere-ci@platform.home.arpa"
+
+      echo "Clonage du dépôt GitOps"
+
+      git clone \
+        --branch main \
+        --single-branch \
+        "https://oauth2:${GITOPS_TOKEN}@gitlab.platform.home.arpa/shpshore/shopsphere-gitops.git" \
+        shopsphere-gitops
+
+      cd shopsphere-gitops
+
+      VALUES_FILE="charts/shopsphere/values.yaml"
+
+      if [ ! -f "${VALUES_FILE}" ]; then
+        echo "Fichier GitOps introuvable : ${VALUES_FILE}"
+        exit 1
+      fi
+
+      TAG_COUNT="$(
+        grep -cE '^[[:space:]]*tag:' "${VALUES_FILE}"
+      )"
+
+      if [ "${TAG_COUNT}" -ne 1 ]; then
+        echo "Nombre inattendu de lignes tag : ${TAG_COUNT}"
+        exit 1
+      fi
+
+      echo "Nouveau tag : ${CI_COMMIT_SHORT_SHA}"
+
+      sed -i -E \
+        "s/^([[:space:]]*tag:).*/\1 \"${CI_COMMIT_SHORT_SHA}\"/" \
+        "${VALUES_FILE}"
+
+      grep -nE \
+        '^[[:space:]]*(repository|tag):' \
+        "${VALUES_FILE}"
+
+      if git diff --quiet -- "${VALUES_FILE}"; then
+        echo "Le dépôt GitOps contient déjà ce tag"
+        exit 0
+      fi
+
+      git add "${VALUES_FILE}"
+
+      git commit -m \
+        "Deploy ShopSphere ${CI_COMMIT_SHORT_SHA} [skip ci]"
+
+      git push origin main
+
+      echo "Tag GitOps mis à jour avec succès"
