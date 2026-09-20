@@ -1,3 +1,8 @@
+# ============================================================
+# ShopSphere - Pipeline CI/CD DevSecOps
+# Verify -> SAST -> Build -> Security -> DAST -> GitOps
+# ============================================================
+
 stages:
   - verify
   - sast
@@ -6,13 +11,19 @@ stages:
   - dast
   - gitops
 
+
+# ============================================================
+# 1 - VERIFY
+# Vérification du Runner Kubernetes et du dépôt
+# ============================================================
+
 runner-smoke-test:
   stage: verify
   image: alpine:3.22
   tags:
     - kubernetes
   script:
-    - echo "Runner Kubernetes ShopShore opérationnel"
+    - echo "Runner Kubernetes ShopSphere opérationnel"
     - echo "Projet=$CI_PROJECT_PATH"
     - echo "Branche=$CI_COMMIT_BRANCH"
     - echo "Commit=$CI_COMMIT_SHORT_SHA"
@@ -23,6 +34,35 @@ runner-smoke-test:
     - echo "Validation initiale réussie"
 
 
+# ============================================================
+# 2 - SAST : SEMGREP
+# Analyse statique du code source avant construction
+# ============================================================
+
+sast-semgrep:
+  stage: sast
+  image:
+    name: semgrep/semgrep:latest
+    entrypoint: [""]
+  tags:
+    - kubernetes
+  script:
+    - semgrep --version
+    - semgrep scan --config p/default --json --output semgrep-report.json src
+    - semgrep scan --config p/default --severity ERROR --error src
+  artifacts:
+    when: always
+    paths:
+      - semgrep-report.json
+    expire_in: 1 week
+
+
+# ============================================================
+# 3 - BUILD : KANIKO
+# Construction des 9 images sans Docker privilégié
+# Tag des images = SHA court du commit Git
+# ============================================================
+
 build-images:
   stage: build
   image:
@@ -30,10 +70,12 @@ build-images:
     entrypoint: [""]
   tags:
     - kubernetes
+
   rules:
     - changes:
         - "src/**/*"
     - when: never
+
   parallel:
     matrix:
       - SERVICE:
@@ -46,11 +88,13 @@ build-images:
           - payment
           - product-catalog
           - shipping
+
   script:
     - echo "Construction du microservice ${SERVICE}"
     - mkdir -p /kaniko/.docker
     - AUTH="$(printf '%s:%s' "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64 | tr -d '\n')"
     - printf '{"auths":{"%s":{"auth":"%s"}}}\n' "$CI_REGISTRY" "$AUTH" > /kaniko/.docker/config.json
+
     - >
       /kaniko/executor
       --cache=true
@@ -62,6 +106,13 @@ build-images:
       --destination "${CI_REGISTRY_IMAGE}/${SERVICE}:latest"
       --registry-certificate "${CI_REGISTRY}=${CI_SERVER_TLS_CA_FILE}"
 
+
+# ============================================================
+# 4 - SECURITY : TRIVY
+# Scan des images construites
+# HIGH / CRITICAL = Security Gate
+# ============================================================
+
 security-scan:
   stage: security
   image:
@@ -69,17 +120,21 @@ security-scan:
     entrypoint: [""]
   tags:
     - kubernetes
+
   rules:
     - changes:
         - "src/**/*"
     - when: never
+
   variables:
     TRIVY_USERNAME: "$CI_REGISTRY_USER"
     TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
     SSL_CERT_FILE: "$CI_SERVER_TLS_CA_FILE"
     TRIVY_CACHE_DIR: ".trivycache"
+
   script:
     - trivy --version
+
     - |
       for SERVICE in \
         accounting \
@@ -105,28 +160,24 @@ security-scan:
 
         cat "trivy-${SERVICE}.txt"
       done
+
   artifacts:
     when: always
     paths:
       - trivy-*.txt
     expire_in: 1 week
 
-sast-semgrep:
-  stage: sast
-  image:
-    name: semgrep/semgrep:latest
-    entrypoint: [""]
-  tags:
-    - kubernetes
-  script:
-    - semgrep --version
-    - semgrep scan --config p/default --json --output semgrep-report.json src
-    - semgrep scan --config p/default --severity ERROR --error src
-  artifacts:
-    when: always
-    paths:
-      - semgrep-report.json
-    expire_in: 1 week
+
+# ============================================================
+# 5 - DAST : OWASP ZAP
+# Analyse dynamique de l'application déployée
+#
+# Pour la démonstration :
+# lancement automatique sur main.
+#
+# allow_failure permet de poursuivre vers GitOps même si
+# ZAP remonte des alertes.
+# ============================================================
 
 dast-zap:
   stage: dast
@@ -135,12 +186,14 @@ dast-zap:
     entrypoint: [""]
   tags:
     - kubernetes
+
   variables:
     DAST_TARGET_URL: "https://shopsphere.ba3s.abrdns.com"
 
   script:
     - echo "Analyse DAST passive de ${DAST_TARGET_URL}"
     - mkdir -p /zap/wrk
+
     - |
       set +e
 
@@ -165,6 +218,7 @@ dast-zap:
       fi
 
       echo "Scan DAST terminé avec le code ${ZAP_EXIT}"
+
   artifacts:
     when: always
     paths:
@@ -172,10 +226,27 @@ dast-zap:
       - zap-report.json
       - zap-report.md
     expire_in: 1 week
+
   allow_failure: true
+
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-      when: manual
+      changes:
+        - "src/**/*"
+    - when: never
+
+
+# ============================================================
+# 6 - GITOPS
+# Mise à jour automatique du tag Helm avec le SHA du commit
+#
+# Exemple :
+# tag: "ddbed5bf"
+#        ↓
+# tag: "<nouveau SHA>"
+#
+# ArgoCD détecte ensuite le changement GitOps.
+# ============================================================
 
 update-gitops-tag:
   stage: gitops
