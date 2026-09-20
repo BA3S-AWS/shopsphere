@@ -71,11 +71,6 @@ build-images:
   tags:
     - kubernetes
 
-  rules:
-    - changes:
-        - "src/**/*"
-    - when: never
-
   parallel:
     matrix:
       - SERVICE:
@@ -120,11 +115,6 @@ security-scan:
     entrypoint: [""]
   tags:
     - kubernetes
-
-  rules:
-    - changes:
-        - "src/**/*"
-    - when: never
 
   variables:
     TRIVY_USERNAME: "$CI_REGISTRY_USER"
@@ -231,10 +221,7 @@ dast-zap:
 
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - "src/**/*"
-    - when: never
-
+      when: manual
 
 # ============================================================
 # 6 - GITOPS
@@ -258,9 +245,6 @@ update-gitops-tag:
 
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - "src/**/*"
-    - when: never
 
   script:
     - |
