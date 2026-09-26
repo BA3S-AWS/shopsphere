@@ -2,7 +2,7 @@ FROM nginxinc/nginx-unprivileged:alpine
 USER root
 RUN apk upgrade --no-cache
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --chown=101:101 nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 8080
 
