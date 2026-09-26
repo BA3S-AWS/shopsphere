@@ -3,17 +3,17 @@ services:
   percona:
     image: percona/percona-server:8.4
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: shopshore
       MYSQL_USER: shopshore
-      MYSQL_PASSWORD: shopshore
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
       - percona-data:/var/lib/mysql
       - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-prootpassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p$${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -43,7 +43,7 @@ services:
       DB_HOST: percona
       DB_PORT: 3306
       DB_USER: shopshore
-      DB_PASSWORD: shopshore
+      DB_PASSWORD: ${MYSQL_PASSWORD}
       DB_NAME: shopshore
     depends_on:
        percona:
@@ -87,7 +87,7 @@ services:
       DB_HOST: percona
       DB_PORT: 3306
       DB_USER: shopshore
-      DB_PASSWORD: shopshore
+      DB_PASSWORD: ${MYSQL_PASSWORD}
       DB_NAME: shopshore
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPIC: orders

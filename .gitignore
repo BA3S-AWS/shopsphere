@@ -21,3 +21,6 @@ src/accounting/accounting
 
 src/shipping/shipping
 src/fraud-detection/fraud-detection
+
+# Exemple de configuration fourni avec le projet
+!.env.example

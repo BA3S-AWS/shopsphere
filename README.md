@@ -228,7 +228,7 @@ Order <UUID> saved successfully
 
 #Vérification Percona
 docker exec -it shopshore-percona-1 \
-  mysql -u root -prootpassword shopshore \
+  mysql -u root -p"$MYSQL_ROOT_PASSWORD" shopshore \
   -e "SELECT order_id,user_id,total,status FROM orders;"
 
 #Arrêt de l'environnement
